@@ -1,41 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:gitmatch/api/profiles.dart';
+import 'package:gitmatch/api/projects.dart';
 
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'project_screen.dart';
+import 'widgets/profile_provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  var profiles = await ProfilesAPI().getProfiles();
+  var projects = await ProjectsAPI().getProjects();
+  runApp(MyApp(profiles: profiles, projects: projects));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.profiles, required this.projects});
+
+  final List<dynamic> profiles;
+  final List<dynamic> projects;
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'GitConnect',
-        theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // TRY THIS: Try running your application with "flutter run". You'll see
-          // the application has a blue toolbar. Then, without quitting the app,
-          // try changing the seedColor in the colorScheme below to Colors.green
-          // and then invoke "hot reload" (save your changes or press the "hot
-          // reload" button in a Flutter-supported IDE, or press "r" if you used
-          // the command line to start the app).
-          //
-          // Notice that the counter didn't reset back to zero; the application
-          // state is not lost during the reload. To reset the state, use hot
-          // restart instead.
-          //
-          // This works for code too, not just values: Most code changes can be
-          // tested with just a hot reload.
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-          useMaterial3: true,
-        ),
-        home: const HomeScreen());
+    return ChangeNotifierProvider(
+      create: (context) => ProfileProvider(profiles, projects),
+      child: MaterialApp(
+          title: 'GitConnect',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+            useMaterial3: true,
+          ),
+          home: const HomeScreen()),
+    );
   }
 }
 
@@ -66,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
         page = const PeopleMatchingPage();
         break;
       case 2:
-        page = const ProjectScreen();
+        page = const ProjectScreen(); //ProjectScreen();
         break;
       case 3:
         page = const Placeholder();
@@ -76,62 +73,62 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
+        bottomNavigationBar: NavigationBar(
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+          destinations: [
+            NavigationDestination(
+                icon: Icon(
+                  Icons.account_box,
+                  color:
+                      selectedIndex == 0 ? color.inversePrimary : Colors.white,
+                ),
+                label: "Account"),
+            NavigationDestination(
+                icon: Icon(
+                  Icons.person,
+                  color:
+                      selectedIndex == 1 ? color.inversePrimary : Colors.white,
+                ),
+                label: "People"),
+            NavigationDestination(
+                icon: Icon(
+                  Icons.groups_3,
+                  color:
+                      selectedIndex == 2 ? color.inversePrimary : Colors.white,
+                ),
+                label: "Projects"),
+            NavigationDestination(
+                icon: Icon(
+                  Icons.chat_bubble,
+                  color:
+                      selectedIndex == 3 ? color.inversePrimary : Colors.white,
+                ),
+                label: "Chats")
+          ],
+          selectedIndex: selectedIndex,
+          onDestinationSelected: (value) {
+            setState(() {
+              selectedIndex = value;
+            });
+          },
+          backgroundColor: Color(0xFF000000),
+          indicatorColor: Colors.transparent,
+        ),
         backgroundColor: Color(0xFF212121),
         body: SafeArea(
           top: false,
           child: Column(
             children: [
+              AppBar(
+                backgroundColor: Color(0xFF212121),
+                toolbarHeight: 0,
+              ),
               Expanded(
                 child: Container(
                   color: Color(0xFF212121),
                   child: page,
                 ),
               ),
-              NavigationBar(
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-                destinations: [
-                  NavigationDestination(
-                      icon: Icon(
-                        Icons.account_box,
-                        color: selectedIndex == 0
-                            ? color.inversePrimary
-                            : Colors.white,
-                      ),
-                      label: "Account"),
-                  NavigationDestination(
-                      icon: Icon(
-                        Icons.person,
-                        color: selectedIndex == 1
-                            ? color.inversePrimary
-                            : Colors.white,
-                      ),
-                      label: "People"),
-                  NavigationDestination(
-                      icon: Icon(
-                        Icons.groups_3,
-                        color: selectedIndex == 2
-                            ? color.inversePrimary
-                            : Colors.white,
-                      ),
-                      label: "Projects"),
-                  NavigationDestination(
-                      icon: Icon(
-                        Icons.chat_bubble,
-                        color: selectedIndex == 3
-                            ? color.inversePrimary
-                            : Colors.white,
-                      ),
-                      label: "Chats")
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
-                backgroundColor: Color(0xFF000000),
-                indicatorColor: Colors.transparent,
-              )
             ],
           ),
         ));

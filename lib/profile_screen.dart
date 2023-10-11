@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gitmatch/api/profiles.dart';
+import 'package:gitmatch/api/users.dart';
+import 'package:gitmatch/models/profile.dart';
+import "./widgets/chips.dart";
 
-var imageList = [
-  'assets/profileImage1.jpg',
-  'assets/profileImage2.jpg',
-  'assets/profileImage3.jpg',
-  'assets/profileImage4.jpg'
-];
+// TODO: Add the Interested Projects When the projects is done
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,54 +14,331 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  ProfilesAPI myPocketBase = ProfilesAPI();
+
+  Profile? data;
+
+  @override
+  void initState() {
+    super.initState();
+
+    myPocketBase.getProfile("pzux8k2m8p7w9yb").then((value) {
+      setState(() {
+        data = value;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Expanded(
-        child: Container(
-          color: const Color(0xFF212121),
-          child: Padding(
-              padding: EdgeInsets.only(top: 40),
+    if (data == null) {
+      return SafeArea(
+          child: Center(
               child: Column(
-                children: [
-                  Padding(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.width * 0.8,
+              child: const CircularProgressIndicator()),
+        ],
+      )));
+    }
+
+    return Expanded(
+      child: Container(
+        color: const Color(0xFF212121),
+        child: Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30),
+                  child: ProfileTitle(),
+                ),
+                Divider(
+                  color: Colors.white.withOpacity(0.1),
+                  thickness: 1,
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: ProfileHeader(
+                    profile: data,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Divider(
+                  color: Colors.white.withOpacity(0.1),
+                  thickness: 1,
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: ProfileTitle(),
-                  ),
-                  Divider(
-                    color: Colors.white.withOpacity(0.2),
-                    thickness: 1,
-                  ),
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: ProfileHeader(),
-                  ),
-                  SizedBox(height: 10),
-                  Divider(
-                    color: Colors.white.withOpacity(0.2),
-                    thickness: 1,
-                  ),
-                  SizedBox(height: 10),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            ProfilePictures(),
-                            SizedBox(height: 10),
-                            ProfileSkills(),
-                            SizedBox(height: 10),
-                            ProfileInterests(),
-                            SizedBox(height: 20)
-                          ],
-                        ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          ProfilePictures(
+                            profile: data,
+                          ),
+                          const SizedBox(height: 10),
+                          ProfileSkills(profile: data),
+                          const SizedBox(height: 10),
+                          ProfileInterests(profile: data),
+                          const SizedBox(height: 10),
+                          InterestedUsers(profile: data),
+                          const SizedBox(height: 10),
+                          InterestedProjects(profile: data),
+                          const SizedBox(height: 20),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              )),
+                ),
+              ],
+            )),
+      ),
+    );
+  }
+}
+
+class InterestedUsers extends StatelessWidget {
+  final Profile? profile;
+
+  const InterestedUsers({super.key, required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Interested Users",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ProfileInterestedUsers(profile: profile)
+      ],
+    );
+  }
+}
+
+class InterestedProjects extends StatelessWidget {
+  final Profile? profile;
+
+  const InterestedProjects({super.key, required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Interested Projects",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ProfileInterestedProjects(profile: profile)
+      ],
+    );
+  }
+}
+
+class ProfileInterestedUsers extends StatefulWidget {
+  final Profile? profile;
+
+  const ProfileInterestedUsers({super.key, required this.profile});
+
+  @override
+  State<ProfileInterestedUsers> createState() => _ProfileInterestedUsersState();
+}
+
+class _ProfileInterestedUsersState extends State<ProfileInterestedUsers> {
+  List<dynamic> interestedUsers = [];
+
+  @override
+  Widget build(BuildContext context) {
+    if (interestedUsers.isEmpty) {
+      getInterestedUsers().then((value) {
+        setState(() {
+          interestedUsers = value;
+        });
+      });
+    }
+
+    if (interestedUsers.isEmpty) {
+      return SizedBox(
+        height: 75,
+        width: double.infinity,
+        child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (BuildContext context, int index) {
+              return userProfileIcon("");
+            },
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(width: 20),
+            itemCount: 5),
+      );
+    }
+
+    return SizedBox(
+      height: 75,
+      width: double.infinity,
+      child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (BuildContext context, int index) {
+            return userProfileIcon(interestedUsers[index]);
+          },
+          separatorBuilder: (BuildContext context, int index) =>
+              const SizedBox(width: 20),
+          itemCount: interestedUsers.length),
+    );
+  }
+
+  getInterestedUsers() async {
+    UsersAPI userAPI = UsersAPI();
+    ProfilesAPI profileAPI = ProfilesAPI();
+
+    var user = await userAPI.getUserFromProfileId(widget.profile!.id);
+
+    var iUsers = await userAPI.getUserInterestedUsersProfile(user.id);
+
+    List<dynamic> iUsersProfile = [];
+    for (var iUser in iUsers) {
+      var iUserUser = await profileAPI.getProfile(iUser);
+
+      iUsersProfile.add(iUserUser);
+    }
+
+    return iUsersProfile;
+  }
+
+  Widget userProfileIcon(profile) {
+    if (profile == "") {
+      return SizedBox(
+        height: 75,
+        width: 75,
+        child: Container(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 75,
+      width: 75,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(100),
+          image: DecorationImage(
+            image: Image.network(profile.icon).image,
+            fit: BoxFit.cover,
+          ),
+          border: Border.all(
+            color: Colors.white,
+            width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ProfileInterestedProjects extends StatefulWidget {
+  final Profile? profile;
+
+  const ProfileInterestedProjects({super.key, required this.profile});
+
+  @override
+  State<ProfileInterestedProjects> createState() =>
+      _ProfileInterestedProjectsState();
+}
+
+class _ProfileInterestedProjectsState extends State<ProfileInterestedProjects> {
+  List<dynamic> interestedProjects = [];
+
+  @override
+  Widget build(BuildContext context) {
+    if (interestedProjects.isEmpty) {
+      getInterestedProjects().then((value) {
+        setState(() {
+          interestedProjects = value;
+        });
+      });
+    }
+
+    if (interestedProjects.isEmpty) {
+      return SizedBox(
+        height: 75,
+        width: double.infinity,
+        child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (BuildContext context, int index) {
+              return projectLogo("");
+            },
+            separatorBuilder: (BuildContext context, int index) =>
+                const SizedBox(width: 20),
+            itemCount: 5),
+      );
+    }
+
+    return SizedBox(
+      height: 75,
+      width: double.infinity,
+      child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (BuildContext context, int index) {
+            return projectLogo(interestedProjects[index]);
+          },
+          separatorBuilder: (BuildContext context, int index) =>
+              const SizedBox(width: 20),
+          itemCount: interestedProjects.length),
+    );
+  }
+
+  getInterestedProjects() async {
+    UsersAPI userAPI = UsersAPI();
+
+    var user = await userAPI.getUserFromProfileId(widget.profile!.id);
+
+    var iProjects = await userAPI.getUserInterestedProjectsDetails(user.id);
+
+    return iProjects;
+  }
+
+  Widget projectLogo(project) {
+    if (project == "") {
+      return SizedBox(
+        height: 75,
+        width: 75,
+        child: Container(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 75,
+      width: 75,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(100),
+          image: DecorationImage(
+            image: Image.network(project.icon).image,
+            fit: BoxFit.cover,
+          ),
+          border: Border.all(
+            color: Colors.white,
+            width: 2,
+          ),
         ),
       ),
     );
@@ -70,8 +346,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 class ProfileHeader extends StatelessWidget {
+  final Profile? profile;
+
   const ProfileHeader({
     super.key,
+    required this.profile,
   });
 
   @override
@@ -83,14 +362,14 @@ class ProfileHeader extends StatelessWidget {
           Row(
             children: [
               SizedBox(
-                height: 100,
-                width: 100,
+                height: 75,
+                width: 75,
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(100),
-                    image: const DecorationImage(
-                      image: AssetImage("assets/profileIcon.jpg"),
+                    image: DecorationImage(
+                      image: Image.network(profile!.icon).image,
                       fit: BoxFit.cover,
                     ),
                     border: Border.all(
@@ -107,18 +386,18 @@ class ProfileHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Irman Zafyree",
+                      profile!.name,
                       style: Theme.of(context)
                           .textTheme
-                          .headlineMedium!
+                          .headlineSmall!
                           .copyWith(
                               color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      "Flutter Developer",
+                      profile!.role,
                       style: Theme.of(context)
                           .textTheme
-                          .titleMedium!
+                          .bodyLarge!
                           .copyWith(color: Colors.white),
                     ),
                   ],
@@ -129,10 +408,11 @@ class ProfileHeader extends StatelessWidget {
           const SizedBox(height: 10),
           Container(
             alignment: Alignment.centerLeft,
-            child: Text("Bruh, how does this flutter thing work?",
-                style: Theme.of(context).textTheme.labelLarge!.copyWith(
+            child: Text(profile!.bio,
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                       color: Colors.white,
                       fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w300,
                     )),
           )
         ],
@@ -169,8 +449,11 @@ class ProfileTitle extends StatelessWidget {
 }
 
 class ProfilePictures extends StatelessWidget {
+  final Profile? profile;
+
   const ProfilePictures({
     super.key,
+    required this.profile,
   });
 
   @override
@@ -190,7 +473,8 @@ class ProfilePictures extends StatelessWidget {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(children: [
-              for (var image in imageList) ProfileImageWrapper(image: image)
+              for (var pictureURL in profile!.pictures)
+                ProfileImageWrapper(image: pictureURL)
             ]),
           )
         ],
@@ -218,7 +502,7 @@ class ProfileImageWrapper extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             image: DecorationImage(
-              image: AssetImage(image),
+              image: Image.network(image).image,
               fit: BoxFit.cover,
             ),
           ),
@@ -230,9 +514,9 @@ class ProfileImageWrapper extends StatelessWidget {
 }
 
 class ProfileSkills extends StatelessWidget {
-  const ProfileSkills({
-    super.key,
-  });
+  final Profile? profile;
+
+  const ProfileSkills({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -254,10 +538,12 @@ class ProfileSkills extends StatelessWidget {
             spacing: 5,
             runSpacing: 5,
             children: [
-              SkillChip(color: Colors.blue, label: "Flutter"),
-              SkillChip(color: Colors.blue, label: "Flutter"),
-              SkillChip(color: Colors.blue, label: "Flutter"),
-              SkillChip(color: Colors.blue, label: "Flutter"),
+              for (var skill in profile!.skills)
+                SkillChip(
+                    color: Color(
+                        int.parse(skill.hex.substring(1, 7), radix: 16) +
+                            0xFF000000),
+                    label: skill.name)
             ],
           )
         ],
@@ -267,9 +553,9 @@ class ProfileSkills extends StatelessWidget {
 }
 
 class ProfileInterests extends StatelessWidget {
-  const ProfileInterests({
-    super.key,
-  });
+  final Profile? profile;
+
+  const ProfileInterests({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -291,41 +577,16 @@ class ProfileInterests extends StatelessWidget {
             spacing: 5,
             runSpacing: 5,
             children: [
-              SkillChip(color: Colors.blue, label: "Flutter"),
-              SkillChip(color: Colors.blue, label: "Flutter"),
-              SkillChip(color: Colors.blue, label: "Flutter"),
-              SkillChip(color: Colors.blue, label: "Flutter"),
+              for (var interest in profile!.interests)
+                SkillChip(
+                    color: Color(
+                        int.parse(interest.hex.substring(1, 7), radix: 16) +
+                            0xFF000000),
+                    label: interest.name)
             ],
           )
         ],
       ),
-    );
-  }
-}
-
-class SkillChip extends StatelessWidget {
-  final Color color;
-
-  final String label;
-
-  const SkillChip({
-    super.key,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-      decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(20)),
-      child: Text(label,
-          style: Theme.of(context)
-              .textTheme
-              .bodyLarge!
-              .copyWith(color: Colors.white)),
     );
   }
 }

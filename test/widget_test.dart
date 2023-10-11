@@ -7,13 +7,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gitmatch/api/profiles.dart';
+import 'package:gitmatch/api/projects.dart';
 
 import 'package:gitmatch/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+
+    var profiles = await ProfilesAPI().getProfiles();
+    var project = await ProjectsAPI().getProjects();
+    await tester.pumpWidget(MyApp(profiles: profiles, projects: project));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

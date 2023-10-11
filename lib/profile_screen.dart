@@ -46,60 +46,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
       )));
     }
 
-    return Expanded(
-      child: Container(
-        color: const Color(0xFF212121),
-        child: Padding(
-            padding: const EdgeInsets.only(top: 0),
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: ProfileTitle(),
+    return Container(
+      color: const Color(0xFF212121),
+      child: Padding(
+          padding: const EdgeInsets.only(top: 0),
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 30),
+                child: ProfileTitle(),
+              ),
+              Divider(
+                color: Colors.white.withOpacity(0.1),
+                thickness: 1,
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: ProfileHeader(
+                  profile: data,
                 ),
-                Divider(
-                  color: Colors.white.withOpacity(0.1),
-                  thickness: 1,
-                ),
-                const SizedBox(height: 10),
-                Padding(
+              ),
+              const SizedBox(height: 10),
+              Divider(
+                color: Colors.white.withOpacity(0.1),
+                thickness: 1,
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: ProfileHeader(
-                    profile: data,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Divider(
-                  color: Colors.white.withOpacity(0.1),
-                  thickness: 1,
-                ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          ProfilePictures(
-                            profile: data,
-                          ),
-                          const SizedBox(height: 10),
-                          ProfileSkills(profile: data),
-                          const SizedBox(height: 10),
-                          ProfileInterests(profile: data),
-                          const SizedBox(height: 10),
-                          InterestedUsers(profile: data),
-                          const SizedBox(height: 10),
-                          InterestedProjects(profile: data),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        ProfilePictures(
+                          profile: data,
+                        ),
+                        const SizedBox(height: 10),
+                        ProfileSkills(profile: data),
+                        const SizedBox(height: 10),
+                        ProfileInterests(profile: data),
+                        const SizedBox(height: 10),
+                        InterestedUsers(profile: data),
+                        const SizedBox(height: 10),
+                        InterestedProjects(profile: data),
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            )),
-      ),
+              ),
+            ],
+          )),
     );
   }
 }

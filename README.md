@@ -9,7 +9,7 @@ _The social media for developers_
 # Purpose
 
 The purpose is to connect developers with one another.
-Users can swipe through profiles, just like Tinder, and find people of similar interest to them. They can chat with one another on the platform
+Users can swipe through profiles, just like Tinder, and find people of similar interest to them. They can chat with one another on the platform.
 Besides that, it is useful for those looking to get into projects. It may be hard thinking of fun projects, and GitConnect solves that.
 
 **Connecting Developers, Making Friends**
